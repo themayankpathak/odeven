@@ -1,0 +1,41 @@
+/* The whole page: dark background, light text, centred column */
+body {
+  background-color: #121212;
+  color: #e8e8e8;
+  font-family: system-ui, sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 16px;
+  line-height: 1.5;
+}
+
+/* The heading in a warm accent colour */
+h1 {
+  color: #ffd166;
+}
+
+/* The Bowl button */
+button {
+  background-color: #2b2b2b;
+  color: #e8e8e8;
+  border: 1px solid #555555;
+  border-radius: 6px;
+  padding: 8px 24px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Slightly lighter when the mouse is over it */
+button:hover {
+  background-color: #3a3a3a;
+}
+
+/* Make the countdown and result stand out */
+#countdown {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+#result {
+  font-size: 1.2rem;
+}
