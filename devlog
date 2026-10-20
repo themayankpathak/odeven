@@ -1,0 +1,128 @@
+# Devlog: odeven (hand cricket)
+
+A browser hand-cricket game, built step by step in plain HTML, CSS and JavaScript,
+with a learning computer opponent planned (ball log → counting baseline → neural network).
+
+**How it's built:** I write the code myself, in Notepad, testing in the browser Console.
+I use Claude as a tutor: it explains concepts with examples, gives hints and reviews my code,
+but leaves the fixes to me. A few lines were provided directly and are noted below.
+
+---
+
+## 2026-10-18 (night): first page, key input, step 1
+
+**Built**
+- First HTML page linked to `game.js`; learned tags, `head` vs `body`, and why the
+  script goes at the end of the body.
+- Step 0: a `keydown` listener logging `event.code`, `shiftKey` and `repeat`.
+- Step 1: a lookup table (object) turning key codes into runs; ignored keys and
+  key-repeat events; the latest pick shown on the page.
+
+**Design decisions**
+- First design used Shift combinations (Shift+Q = 1 … Shift alone = 10).
+  Replaced with one key per number (Q, A, W, S, E, D = 1–6, Space = 10): simpler, fewer edge cases.
+- Read keys with `event.code` (physical key), not `event.key` (character), so Caps Lock
+  and keyboard language don't matter.
+- Shift/Ctrl/Alt held alongside a game key are ignored (Shift+Q = 1).
+- Several keys pressed "together": the last press to arrive wins.
+- Repeat events from holding a key are ignored.
+
+**Bugs and what they taught me**
+- Missing `)` at the end of the listener: nothing ran. Lesson: count brackets; a listener
+  ends with `});`.
+- Lookup table written backwards (runs → codes instead of codes → runs): every key "ignored".
+  Lesson: look up by what you have in hand.
+- `keyQ` instead of `KeyQ`, `space` instead of `Space`: lookups failed. Lesson: names are case-sensitive.
+- Typo `documemt`: one error stopped the whole file, including code that worked before.
+- An `if` checked a variable called `name` that I had renamed. No error appeared, because
+  browsers have a built-in global `window.name`. Lesson: a missing error doesn't mean correct code.
+- `if (press.repeat = true)`: a single `=` assigns instead of comparing, so the function always
+  returned. Lesson: `=` assigns, `===` compares.
+- Built a key-press counter instead of storing the latest pick, in a separate listener that
+  couldn't see `runs`. Lesson: scope; a variable made inside one function doesn't exist in another.
+- Confusion: the Console grouped identical lines with a count, and repeated pastes of old output.
+  Lesson: clear the Console before each test.
+
+Provided directly: the `<p id="pick">` markup, and the line writing the pick with
+`getElementById(...).textContent`.
+
+---
+
+## 2026-10-18 (afternoon): GitHub, Bowl button, countdown, gate
+
+**Built**
+- Repository `odeven` with `README.md` and `rules.md` (design decisions), GitHub Pages.
+- Bowl button calling a `bowling()` function.
+- A 3-second countdown with `setInterval` / `clearInterval`, shown on the page.
+- A `ballInProgress` gate: keys only count during a ball; Bowl can't start a second ball.
+
+**Bugs and what they taught me**
+- First button attempt: the `keydown` event instead of `click`, the event object passed
+  instead of a function, and the line placed inside the key listener (it would re-attach on
+  every key press). Lesson: `addEventListener(event, function)`, set up once at the top level.
+- `let timeLeft = 3;` inside the function created a second variable; the top-level one stayed
+  `null`. Lesson: `let` creates; to update, assign without `let`.
+- Countdown only in the Console: players never open it. Lesson: show state on the page.
+- Without the gate: keys counted before and after a ball, and double-clicking Bowl started
+  two timers. The second overwrote `timerId`, so the first was never cleared and counted below
+  zero forever. Lesson: a state variable checked at every entry point.
+- "Pick stays none": I was pressing keys outside the 3-second window. The gate was working;
+  the debug listener (no gate) made it look broken.
+
+---
+
+## 2026-10-20: computer pick, result, step 2 done
+
+**Built**
+- The computer's secret random pick from `[1, 2, 3, 4, 5, 6, 10]`.
+- Refactored the end of a ball into an `endBall()` function.
+- The result: dot ball / OUT / runs, shown on the page with both numbers.
+- First OUT!
+
+**Bugs and what they taught me**
+- Array written as `["1","2",...]`: text, not numbers, so `"5" === 5` was never true and nobody
+  could ever be out. Lesson: quotes make strings.
+- Stored the random **position** instead of the item, so the computer "picked" 0.
+  Lesson: `Math.floor(Math.random() * n)` gives an index; the value is `array[index]`.
+- `const computerShots = ...` inside the function shadowed the top-level variable (the same
+  trap as `timeLeft`).
+- Template strings: `$(x)` instead of `${x}`, and single quotes instead of backticks; both print
+  the text literally. Lesson: backticks and curly braces.
+- Space trap: after clicking Bowl, the button kept focus, so pressing Space (10 runs) "clicked"
+  it and started a new ball. Fixed with `.blur()`, after first putting it in a branch that never
+  ran on a normal click.
+
+Provided directly: the `.blur()` line, and one example `textContent` line for the result.
+
+---
+
+## 2026-10-21: dark mode, step 3a (score) and 3b (automatic balls, forfeit)
+
+**Built**
+- Dark theme in `style.css` (learned selectors, `#id`, `:hover`, `rem`, hex colours).
+- 3a: total score and balls faced; the innings ends on OUT; Bowl does nothing afterwards.
+- 3b: Bowl starts the innings, then balls chain automatically with `setTimeout` (2.5 s pause);
+  Bowl disabled during the innings; 3 dot balls in a row = forfeit.
+
+**Bugs and what they taught me**
+- An extra `}` at the end of `endBall()`: a syntax error stopped the whole file.
+- Counters started at `null`: an out on the first ball would show "null". Start counts at 0.
+- The scoreboard was written into the `result` paragraph (overwriting the result), then into
+  the `bowl` button (replacing its label). Lesson: check which `id` you're writing to.
+- `$( )` instead of `${ }` again. Curly braces are Shift+[ and Shift+].
+- `set(bowling, 2500)` instead of `setTimeout(...)`: "not defined" error, no next ball.
+- `disabled = true` placed in a branch that only runs on a second click (the same placement
+  mistake as `blur()`).
+- Forfeit counted **total** dot balls, not dot balls **in a row**. Then the reset `else` was
+  attached to the inner `if (strikes === 3)`, which reset on every dot, so a forfeit could
+  never happen. Lesson: trace the code ball by ball; an `else` belongs to the nearest `if`.
+  The reset belongs in the scoring branch.
+
+Provided directly: the starter CSS for dark mode.
+
+---
+
+## Next
+- 3c: the computer bats and chases the target (open rule questions in `rules.md`).
+- 3d: toss. 3e: result and play again.
+- Then step 4: the ball log (the dataset), step 5: counting-table baseline, step 6: neural network.
