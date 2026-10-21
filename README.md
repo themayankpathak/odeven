@@ -42,13 +42,6 @@ Full rules and the reasoning behind them: [rules.md](rules.md)
 
 Plain HTML, CSS and JavaScript. No frameworks.
 
-## How it's built
-
-I write the code myself, step by step, in a plain text editor, testing in the browser.
-I use Claude (Anthropic's AI assistant) as a tutor: it explains concepts with examples,
-gives hints and reviews my code, and leaves the fixes to me. The few places where
-it provided code directly are noted in the [devlog](devlog.md), along with every bug
-and what it taught me.
 
 ## Files
 
