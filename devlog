@@ -28,46 +28,34 @@ but leaves the fixes to me. A few lines were provided directly and are noted bel
 - Repeat events from holding a key are ignored.
 
 **Bugs and what they taught me**
-- Missing `)` at the end of the listener: nothing ran. Lesson: count brackets; a listener
-  ends with `});`.
-- Lookup table written backwards (runs → codes instead of codes → runs): every key "ignored".
-  Lesson: look up by what you have in hand.
-- `keyQ` instead of `KeyQ`, `space` instead of `Space`: lookups failed. Lesson: names are case-sensitive.
+- Missing `)` at the end of the listener: nothing ran. Lesson: count brackets; a listener ends with `});`.
+- Lookup table written backwards (runs → codes): every key "ignored". Lesson: look up by what you have in hand.
+- `keyQ` instead of `KeyQ`, `space` instead of `Space`: names are case-sensitive.
 - Typo `documemt`: one error stopped the whole file, including code that worked before.
-- An `if` checked a variable called `name` that I had renamed. No error appeared, because
-  browsers have a built-in global `window.name`. Lesson: a missing error doesn't mean correct code.
-- `if (press.repeat = true)`: a single `=` assigns instead of comparing, so the function always
-  returned. Lesson: `=` assigns, `===` compares.
-- Built a key-press counter instead of storing the latest pick, in a separate listener that
-  couldn't see `runs`. Lesson: scope; a variable made inside one function doesn't exist in another.
-- Confusion: the Console grouped identical lines with a count, and repeated pastes of old output.
-  Lesson: clear the Console before each test.
+- An `if` checked a variable called `name` that I had renamed. No error, because browsers have a
+  built-in global `window.name`. Lesson: a missing error doesn't mean correct code.
+- `if (press.repeat = true)`: a single `=` assigns, so the function always returned. `=` assigns, `===` compares.
+- Built a key-press counter in a separate listener that couldn't see `runs`. Lesson: scope.
+- The Console grouped identical lines, and I pasted old output by mistake. Lesson: clear the Console before each test.
 
-Provided directly: the `<p id="pick">` markup, and the line writing the pick with
-`getElementById(...).textContent`.
+Provided directly: the `<p id="pick">` markup, and the line writing the pick with `getElementById(...).textContent`.
 
 ---
 
 ## 2026-10-18 (afternoon): GitHub, Bowl button, countdown, gate
 
 **Built**
-- Repository `odeven` with `README.md` and `rules.md` (design decisions), GitHub Pages.
-- Bowl button calling a `bowling()` function.
-- A 3-second countdown with `setInterval` / `clearInterval`, shown on the page.
+- Repository with `README.md` and `rules.md`, GitHub Pages.
+- Bowl button calling `bowling()`; a 3-second countdown with `setInterval` / `clearInterval`, shown on the page.
 - A `ballInProgress` gate: keys only count during a ball; Bowl can't start a second ball.
 
 **Bugs and what they taught me**
-- First button attempt: the `keydown` event instead of `click`, the event object passed
-  instead of a function, and the line placed inside the key listener (it would re-attach on
-  every key press). Lesson: `addEventListener(event, function)`, set up once at the top level.
-- `let timeLeft = 3;` inside the function created a second variable; the top-level one stayed
-  `null`. Lesson: `let` creates; to update, assign without `let`.
-- Countdown only in the Console: players never open it. Lesson: show state on the page.
-- Without the gate: keys counted before and after a ball, and double-clicking Bowl started
-  two timers. The second overwrote `timerId`, so the first was never cleared and counted below
-  zero forever. Lesson: a state variable checked at every entry point.
-- "Pick stays none": I was pressing keys outside the 3-second window. The gate was working;
-  the debug listener (no gate) made it look broken.
+- First button attempt: `keydown` instead of `click`, the event object passed instead of a function,
+  and the line placed inside the key listener. Lesson: `addEventListener(event, function)`, set up once.
+- `let timeLeft = 3;` inside the function created a second variable. Lesson: `let` creates; assign to update.
+- Countdown only in the Console. Lesson: show state on the page; players never open the Console.
+- Without the gate, double-clicking Bowl started two timers; the second overwrote `timerId`, so the
+  first was never cleared and counted below zero forever. Lesson: one state variable checked at every entry point.
 
 ---
 
@@ -75,54 +63,90 @@ Provided directly: the `<p id="pick">` markup, and the line writing the pick wit
 
 **Built**
 - The computer's secret random pick from `[1, 2, 3, 4, 5, 6, 10]`.
-- Refactored the end of a ball into an `endBall()` function.
-- The result: dot ball / OUT / runs, shown on the page with both numbers.
-- First OUT!
+- Refactored the end of a ball into `endBall()`.
+- The result: dot ball / OUT / runs, with both numbers. First OUT!
 
 **Bugs and what they taught me**
-- Array written as `["1","2",...]`: text, not numbers, so `"5" === 5` was never true and nobody
-  could ever be out. Lesson: quotes make strings.
-- Stored the random **position** instead of the item, so the computer "picked" 0.
-  Lesson: `Math.floor(Math.random() * n)` gives an index; the value is `array[index]`.
-- `const computerShots = ...` inside the function shadowed the top-level variable (the same
-  trap as `timeLeft`).
-- Template strings: `$(x)` instead of `${x}`, and single quotes instead of backticks; both print
-  the text literally. Lesson: backticks and curly braces.
-- Space trap: after clicking Bowl, the button kept focus, so pressing Space (10 runs) "clicked"
-  it and started a new ball. Fixed with `.blur()`, after first putting it in a branch that never
-  ran on a normal click.
+- Array written as `["1","2",...]`: text, not numbers, so `"5" === 5` was never true. Quotes make strings.
+- Stored the random **position** instead of the item, so the computer "picked" 0. The value is `array[index]`.
+- `const computerShots = ...` inside the function shadowed the top-level variable.
+- Template strings: `$(x)` instead of `${x}`, and single quotes instead of backticks.
+- Space trap: the focused Bowl button was "clicked" by Space (10 runs). Fixed with `.blur()`,
+  after first putting it in a branch that never ran on a normal click.
 
 Provided directly: the `.blur()` line, and one example `textContent` line for the result.
 
 ---
 
-## 2026-10-21: dark mode, step 3a (score) and 3b (automatic balls, forfeit)
+## 2026-10-21: dark mode, 3a (score), 3b (automatic balls, forfeit)
 
 **Built**
-- Dark theme in `style.css` (learned selectors, `#id`, `:hover`, `rem`, hex colours).
+- Dark theme in `style.css` (selectors, `#id`, `:hover`, `rem`, hex colours).
 - 3a: total score and balls faced; the innings ends on OUT; Bowl does nothing afterwards.
-- 3b: Bowl starts the innings, then balls chain automatically with `setTimeout` (2.5 s pause);
-  Bowl disabled during the innings; 3 dot balls in a row = forfeit.
+- 3b: balls chain automatically with `setTimeout` (2.5 s pause); Bowl disabled during an innings;
+  3 dot balls in a row = forfeit.
 
 **Bugs and what they taught me**
-- An extra `}` at the end of `endBall()`: a syntax error stopped the whole file.
-- Counters started at `null`: an out on the first ball would show "null". Start counts at 0.
-- The scoreboard was written into the `result` paragraph (overwriting the result), then into
-  the `bowl` button (replacing its label). Lesson: check which `id` you're writing to.
-- `$( )` instead of `${ }` again. Curly braces are Shift+[ and Shift+].
-- `set(bowling, 2500)` instead of `setTimeout(...)`: "not defined" error, no next ball.
-- `disabled = true` placed in a branch that only runs on a second click (the same placement
-  mistake as `blur()`).
-- Forfeit counted **total** dot balls, not dot balls **in a row**. Then the reset `else` was
-  attached to the inner `if (strikes === 3)`, which reset on every dot, so a forfeit could
-  never happen. Lesson: trace the code ball by ball; an `else` belongs to the nearest `if`.
-  The reset belongs in the scoring branch.
+- An extra `}` at the end of a function: a syntax error stopped the whole file.
+- Counters started at `null`. Start counts at 0.
+- The scoreboard was written into the `result` paragraph, then into the `bowl` button (replacing its label).
+- `set(bowling, 2500)` instead of `setTimeout(...)`.
+- `disabled = true` placed in a branch that only runs on a second click.
+- Forfeit first counted **total** dot balls; then the reset `else` was attached to the inner `if`,
+  so a forfeit could never happen. Lesson: trace the code ball by ball; an `else` belongs to the nearest `if`.
 
 Provided directly: the starter CSS for dark mode.
 
 ---
 
-## Next
-- 3c: the computer bats and chases the target (open rule questions in `rules.md`).
-- 3d: toss. 3e: result and play again.
-- Then step 4: the ball log (the dataset), step 5: counting-table baseline, step 6: neural network.
+## 2026-10-21 (evening) to 2026-10-22: step 3c, the computer bats
+
+**Built**
+- Innings break: target = player's score + 1, sides swap, scores reset, Bowl becomes "Start 2nd Innings".
+- `startInning()` for the button: the button starts an innings, the timer runs each next ball.
+- Refactored `endBall()`: shared steps stay in it; the result logic moved into `playerBats()` and `computerBats()`.
+- Computer batting: it scores its own pick; the player's key is the bowl; no bowl = free runs;
+  the chase ends the match the moment the target is reached (`&&`, `>=`).
+- A match result for every ending, including the house rule (computer out level = computer wins).
+- **A full match is now playable from start to result.**
+
+**Bugs and what they taught me**
+- Typo `bastman = 'computer'`: no error, because assigning to an undeclared name silently creates
+  a new global variable. The real `batsman` stayed "player".
+- After an OUT the game froze: the Bowl button stayed disabled, and even when enabled, `bowling()`
+  returned because `inningOver` was still true. Fixed with `startInning()`. (The first instruction
+  I followed contained a conflict here, and the bug exposed it.)
+- During the refactor, braces ended up in the wrong places several times: the innings break ran after
+  every ball, scoreboard lines ended up outside every function, a function lost its closing brace,
+  and `functio` was mistyped. Lesson: indent every block, move whole blocks including their braces,
+  check the Console after each move.
+- The computer's OUT branch was copied from the player's and still contained the innings break,
+  which would have started a third innings. Lesson: reread copied code in its new context.
+- Free runs (no bowl) were announced but not added to the total.
+- The winning margin was first put in the tie branch, where it is always 0.
+
+Provided directly: the rearranged `endBall` / `playerBats` / `computerBats` structure (my own lines,
+put back in the right places, with comments marking each closing brace).
+
+---
+
+## Plan for next session
+
+**1. Split `game.js` into topic files** (a pure move, no logic changes):
+`state.js` (constants and variables), `input.js` (key listeners), `ball.js` (`bowling`, `endBall`),
+`innings.js` (`playerBats`, `computerBats`), `main.js` (`startInning`, button hookup), loaded in that order.
+
+**2. 3d-1: both orders.** An `innings` variable and an `inningsBreak()` function, so either side can bat
+first and either side can chase. Every chase check must also test the innings, because in JavaScript
+`5 >= null` is `true`.
+
+**3. 3d-2: the toss** (design agreed):
+- the player clicks Odd or Even, then throws a number; the computer throws a random one;
+- odd or even sum (`%` remainder) decides the toss winner;
+- the winner chooses bat or bowl (the player via Bat / Bowl buttons, the computer at random);
+- still to decide: whether the toss throw has a timer.
+
+**4. 3e: play again**, with an `endMatch(message)` function used at all five endings and a
+`resetMatch()` function.
+
+**Then:** step 4 ball log (the dataset), step 5 counting baseline, step 6 neural network.
